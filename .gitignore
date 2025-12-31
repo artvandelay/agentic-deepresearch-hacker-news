@@ -1,0 +1,33 @@
+# Data
+downloaded-site/
+*.sqlite
+*.sqlite.gz
+*.db
+*.db.gz
+
+# Environment
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+
+# Output
+reports/
+*.md.bak
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
