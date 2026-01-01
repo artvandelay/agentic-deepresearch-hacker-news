@@ -45,10 +45,10 @@ else
     mkdir -p .tmp-download
     cd .tmp-download
     
-    # Download all 5 split parts
-    for part in aa ab ac ad ae; do
+    # Download all 10 split parts
+    for part in aa ab ac ad ae af ag ah ai aj; do
         filename="data-archive.tar.gz.part${part}"
-        echo "Downloading part ${part} (5 parts total)..."
+        echo "Downloading part ${part} (10 parts total)..."
         curl -L -o "$filename" \
             "https://github.com/${REPO}/releases/latest/download/${filename}"
     done
