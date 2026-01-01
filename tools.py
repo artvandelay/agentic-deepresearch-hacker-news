@@ -52,7 +52,7 @@ def search_hn(keywords: List[str], limit: int = 20, min_score: Optional[int] = N
     
     # Get full content for each result
     posts = []
-    for r in results[:limit]:
+    for r in results:
         item = db.get_item_by_id(r['id'], max_shards=200)
         if item:
             # Clean HTML entities (minimal processing, just readability)

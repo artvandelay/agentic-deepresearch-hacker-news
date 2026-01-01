@@ -148,7 +148,8 @@ class AgenticResearcher:
         print(f"Calls used:    {self.calls_used}/{self.max_calls}")
         print(f"Searches:      {self.searches_performed}")
         print(f"Posts found:   {self.posts_found}")
-        print(f"Avg per call:  {total_elapsed/self.calls_used:.2f}s")
+        if self.calls_used > 0:
+            print(f"Avg per call:  {total_elapsed/self.calls_used:.2f}s")
         print(f"{'='*80}\n")
         
         if python_pct > 2.0:
@@ -174,81 +175,65 @@ class AgenticResearcher:
             "model": self.model,
             "messages": self.conversation,
             "temperature": 0.7,
-            "max_tokens": 4000
+            "max_tokens": 4000,
+            "response_format": {"type": "json_object"} if "gpt" in self.model else None
         }
         
-        response = requests.post(self.base_url, headers=headers, json=payload)
-        response.raise_for_status()
+        # Remove None values
+        payload = {k: v for k, v in payload.items() if v is not None}
         
-        result = response.json()
-        content = result["choices"][0]["message"]["content"]
-        
-        return content
+        try:
+            response = requests.post(self.base_url, headers=headers, json=payload, timeout=120)
+            response.raise_for_status()
+            
+            result = response.json()
+            content = result["choices"][0]["message"]["content"]
+            
+            return content
+        except requests.exceptions.Timeout:
+            raise Exception("LLM API request timed out after 120s")
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"LLM API request failed: {e}")
     
     def _parse_action(self, response: str) -> Dict:
         """
         Parse LLM response into action dict.
-        Minimal parsing - just extract structure.
+        Expects JSON format from LLM.
         """
-        # Extract ACTION line
-        action_match = re.search(r'ACTION:\s*(\w+)', response, re.IGNORECASE)
-        if not action_match:
-            # No action found - treat as thinking/intermediate response
-            return {"type": "CONTINUE", "content": response}
-        
-        action_type = action_match.group(1).upper()
-        
-        # Parse based on action type
-        if action_type in ["SEARCH", "REFINE_SEARCH"]:
-            # Extract keywords
-            keywords_match = re.search(r'Keywords:\s*\[(.*?)\]', response, re.IGNORECASE | re.DOTALL)
-            if keywords_match:
-                keywords_str = keywords_match.group(1)
-                # Split by comma and clean
-                keywords = [k.strip().strip('"').strip("'") for k in keywords_str.split(',')]
-                keywords = [k for k in keywords if k]  # Remove empty
+        try:
+            # Try to parse as JSON directly
+            action = json.loads(response)
+            
+            # Normalize action type to uppercase
+            if "action" in action:
+                action["type"] = action["action"].upper()
+                return action
             else:
-                keywords = []
-            
-            return {
-                "type": "SEARCH",
-                "keywords": keywords,
-                "raw_response": response
-            }
+                # Invalid JSON structure
+                return {
+                    "type": "ERROR",
+                    "message": "JSON missing 'action' field",
+                    "raw_response": response
+                }
         
-        elif action_type == "SYNTHESIZE":
-            # Extract section and content
-            section_match = re.search(r'Section:\s*\[(.*?)\]', response, re.IGNORECASE)
-            content_match = re.search(r'Content:\s*\[(.*)\]', response, re.IGNORECASE | re.DOTALL)
+        except json.JSONDecodeError as e:
+            # LLM didn't return valid JSON - try to extract JSON from markdown code block
+            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response, re.DOTALL | re.IGNORECASE)
+            if json_match:
+                try:
+                    action = json.loads(json_match.group(1))
+                    if "action" in action:
+                        action["type"] = action["action"].upper()
+                        return action
+                except json.JSONDecodeError:
+                    pass
             
-            section = section_match.group(1).strip() if section_match else "Unknown Section"
-            content = content_match.group(1).strip() if content_match else response
-            
+            # Fallback - return error
             return {
-                "type": "SYNTHESIZE",
-                "section": section,
-                "content": content,
-                "raw_response": response
+                "type": "ERROR",
+                "message": f"Failed to parse JSON: {str(e)}",
+                "raw_response": response[:500]  # Truncate for context
             }
-        
-        elif action_type == "DONE":
-            # Extract report
-            report_match = re.search(r'Report:\s*\[(.*)\]', response, re.IGNORECASE | re.DOTALL)
-            if report_match:
-                report = report_match.group(1).strip()
-            else:
-                # Sometimes LLM puts report after DONE without brackets
-                report = response[action_match.end():].strip()
-            
-            return {
-                "type": "DONE",
-                "report": report,
-                "raw_response": response
-            }
-        
-        else:
-            # Unknown action - treat as continue
-            return {"type": "CONTINUE", "content": response}
     
     def _execute_action(self, action: Dict) -> Dict:
         """
@@ -303,12 +288,21 @@ class AgenticResearcher:
                 "note": "Continue with next action"
             }
         
+        elif action_type == "ERROR":
+            # Parsing error
+            error_msg = action.get("message", "Unknown error")
+            print(f"❌ ERROR: {error_msg}")
+            return {
+                "action": "ERROR",
+                "note": f"LLM response error: {error_msg}. Please respond with valid JSON."
+            }
+        
         else:
             # Unknown action
             print(f"⚠️  Unknown action: {action_type}")
             return {
                 "action": "UNKNOWN",
-                "note": f"Action '{action_type}' not recognized. Available: SEARCH, SYNTHESIZE, DONE"
+                "note": f"Action '{action_type}' not recognized. Available: SEARCH, SYNTHESIZE, DONE. Respond with valid JSON."
             }
     
     def _force_completion(self) -> str:

@@ -28,7 +28,7 @@ ORIGINAL_URL="https://github.com/DOSAYGO-STUDIO/HackerBook/releases/download/v1.
 
 if curl -L --fail --silent --head "$ORIGINAL_URL" > /dev/null 2>&1; then
     echo "✅ Original source available, downloading (this may take a while)..."
-    curl -L -o downloaded-site.tar.gz "$ORIGINAL_URL"
+    curl -L --fail --progress-bar -o downloaded-site.tar.gz "$ORIGINAL_URL"
     echo ""
     echo "🔧 Extracting archive..."
     tar -xzf downloaded-site.tar.gz
@@ -49,17 +49,27 @@ else
     for i in $(seq -w 1 10); do
         filename="data-archive-part-${i}.tar.gz"
         echo "Downloading part ${i} (10 parts total)..."
-        curl -L -o "$filename" \
+        curl -L --fail -o "$filename" \
             "https://github.com/${REPO}/releases/latest/download/${filename}"
     done
     
     echo ""
     echo "🔧 Merging split parts and extracting..."
     # Concatenate all parts back into single archive and extract
-    cat data-archive-part-*.tar.gz | tar -xzf -
+    # Using explicit order to ensure correct concatenation
+    for i in $(seq -w 1 10); do
+        cat "data-archive-part-${i}.tar.gz"
+    done | tar -xzf -
     
     # Move extracted data to parent directory (the repo root)
-    mv downloaded-site ../
+    if [ -d "downloaded-site" ]; then
+        mv downloaded-site ../
+    else
+        echo "❌ Error: 'downloaded-site' directory not found in archive!"
+        cd ..
+        rm -rf .tmp-download
+        exit 1
+    fi
     
     # Cleanup temp directory
     cd ..
