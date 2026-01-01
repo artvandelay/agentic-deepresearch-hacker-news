@@ -4,6 +4,8 @@ downloaded-site/
 *.sqlite.gz
 *.db
 *.db.gz
+data-release/
+.tmp-download/
 
 # Environment
 .env

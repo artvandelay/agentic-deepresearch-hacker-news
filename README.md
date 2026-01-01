@@ -1,25 +1,45 @@
-# 🛡️ HN Sentinel
+# 🔬 Agentic Deep Research on Hacker News
 
 **AI-Powered Deep Research on 19 Years of HackerNews Discussions (2006-2025)**
 
-Agentic research system that analyzes the complete HackerNews archive. The LLM controls the research workflow, Python just provides tools.
+Fully agentic research system where the LLM controls everything. Analyze the complete HackerNews archive with true AI agency - the LLM decides what to search, when to synthesize, and when it's done. Python just provides tools.
 
 ---
 
 ## 🚀 Quick Start
 
 ```bash
-# 1. Set your API key in .env file
+# 1. Download the HackerNews archive data (8.8GB, one-time setup)
+./setup-data.sh
+
+# 2. Set your API key in .env file
 echo "OPENROUTER_API_KEY=sk-or-v1-..." > .env
 
-# 2. Run agentic research
+# 3. Run agentic research
 python3 agentic_research.py "rust programming language" -o report.md --calls 20
 
-# 3. Read your report
+# 4. Read your report
 open report.md
 ```
 
 **That's it!** The LLM will decide what to search, when to synthesize, and when it's done.
+
+### Data Setup
+
+The system requires the HackerNews archive (8.8GB, 42M items, 2006-2025). 
+
+**Option 1: Automatic (Recommended)**
+```bash
+./setup-data.sh  # Downloads from GitHub Releases
+```
+
+**Option 2: Manual (If releases unavailable)**
+```bash
+wget https://github.com/DOSAYGO-STUDIO/HackerBook/releases/download/v1.0/downloaded-site.tar.gz
+tar -xzf downloaded-site.tar.gz && rm downloaded-site.tar.gz
+```
+
+The data is archived as of December 31, 2025, and split into 5 parts (~2GB each) in GitHub Releases for easier downloading.
 
 ---
 
