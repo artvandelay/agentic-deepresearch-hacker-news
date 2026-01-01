@@ -21,6 +21,9 @@ env/
 # Output
 reports/
 *.md.bak
+test_*.md
+*_report.md
+*_gemini.md
 
 # IDE
 .vscode/
