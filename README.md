@@ -4,6 +4,8 @@
 
 Fully agentic research system where the LLM controls everything. Analyze the complete HackerNews archive with true AI agency - the LLM decides what to search, when to synthesize, and when it's done. Python just provides tools.
 
+> **Note:** Data archive (8.8GB) is available in [GitHub Releases](https://github.com/artvandelay/agentic-deepresearch-hacker-news/releases). The setup script will download it automatically.
+
 ---
 
 ## 🚀 Quick Start
