@@ -1,334 +1,228 @@
 # 🔬 Agentic Deep Research on Hacker News
 
-**AI-Powered Deep Research on 19 Years of HackerNews Discussions (2006-2025)**
+**AI-powered research on 19 years of HackerNews discussions (2006-2025)**
 
-Fully agentic research system where the LLM controls everything. Analyze the complete HackerNews archive with true AI agency - the LLM decides what to search, when to synthesize, and when it's done. Python just provides tools.
+Ask a question. Get a comprehensive research report. The AI decides everything—what to search, what to analyze, when it's done.
 
-> **Note:** Data archive (8.8GB) is available in [GitHub Releases](https://github.com/artvandelay/agentic-deepresearch-hacker-news/releases). The setup script will download it automatically.
+> **Data:** 8.8GB archive available in [GitHub Releases](https://github.com/artvandelay/agentic-deepresearch-hacker-news/releases)
 
 ---
 
 ## 🚀 Quick Start
 
 ```bash
-# 1. Download the HackerNews archive data (8.8GB, one-time setup)
-./setup-data.sh
+# 1. Clone and setup
+git clone https://github.com/artvandelay/agentic-deepresearch-hacker-news.git
+cd agentic-deepresearch-hacker-news
+./setup-data.sh  # Downloads 8.8GB HN archive (one-time)
 
-# 2. Set your API key in .env file
+# 2. Add your API key
 echo "OPENROUTER_API_KEY=sk-or-v1-..." > .env
 
-# 3. Run agentic research
-python3 agentic_research.py "rust programming language" -o report.md --calls 20
+# 3. Run research
+python3 agentic_research.py "rust programming language" -o report.md
 
 # 4. Read your report
 open report.md
 ```
 
-**That's it!** The LLM will decide what to search, when to synthesize, and when it's done.
-
-### Data Setup
-
-The system requires the HackerNews archive (8.8GB, 42M items, 2006-2025).
-
-```bash
-./setup-data.sh
-```
-
-The script automatically:
-1. Tries to download from the original source first
-2. Falls back to GitHub Releases backup (archived Dec 31, 2025) if original is unavailable
-
-Either way, you get the same `downloaded-site/` directory and the code works seamlessly.
+**That's it!** The AI controls the entire research process.
 
 ---
 
-## 📊 Data
+## 💡 What You Get
 
-- **8.8 GB** of HackerNews archive
-- **~42 million items** (stories, comments, polls)
-- **1,637 SQLite shards** covering 2006-2025
-- **Full text content** with metadata
-- **Already downloaded and ready** (`downloaded-site/`)
+Ask: *"What does HackerNews think about mechanical keyboards?"*
+
+Get: A comprehensive markdown report with:
+- Multiple perspectives from actual HN discussions
+- 10+ direct quotes with attribution `[Post #123, by username]`
+- Historical context and trends
+- Technical details and community insights
+- 2000+ words of analysis
+
+**Cost:** ~$0.50 with Gemini Flash  
+**Time:** 1-2 minutes  
+**Quality:** The AI refines until satisfied
 
 ---
 
-## 🤖 Available Tools
+## 🎯 How It Works
 
-### 1. ⭐ **Agentic Research** (Recommended)
+**Fully Agentic Design:**
+1. AI decides what to search
+2. AI analyzes results
+3. AI decides to search more or synthesize
+4. AI decides when research is complete
+5. AI generates final report
 
-**When:** You want the LLM to control the research process  
-**Cost:** $0.50-2 per report (with Gemini Flash)  
-**Speed:** ~1-3 minutes for 10-20 calls
+**Python is just glue** (<2% of execution time). All intelligence lives in the LLM.
 
-```bash
-# With Gemini Flash (cheap & fast)
-python3 agentic_research.py "mechanical keyboards" -o report.md --calls 15 --model "google/gemini-2.5-flash"
+**Example conversation:**
+```
+AI: "I'll search for 'mechanical keyboard' to understand the landscape"
+→ Finds 50 posts
 
-# With Claude Sonnet (higher quality)
-python3 agentic_research.py "analog computers" -o report.md --calls 20 --model "anthropic/claude-3.5-sonnet"
+AI: "Good overview. Now I'll search for customization aspects"
+→ Finds 50 more posts
+
+AI: "I'll synthesize the motivations section now"
+→ Writes section with quotes
+
+AI: "Need to cover downsides. Searching for problems"
+→ Finds 3 posts
+
+AI: "I have comprehensive coverage. Finalizing report."
+→ Generates 15KB report
 ```
 
-**How it works:**
-- LLM decides what to search, when to synthesize, when done
-- Python just executes tools (<2% overhead)
-- Recursive refinement (LLM controls depth)
-- Self-correcting (adapts to data availability)
+---
 
-**Options:**
+## 📊 Model Options
+
+### Gemini 2.5 Flash (Recommended)
+- **Cost:** ~$0.50 per report
+- **Speed:** 1-2 minutes
+- **Quality:** Very good
 ```bash
---calls N          # Maximum LLM calls (default: 20)
---model MODEL      # Model to use (default: anthropic/claude-3.5-sonnet)
--o FILE            # Output file (prints to stdout if not specified)
+python3 agentic_research.py "your question" --model "google/gemini-2.5-flash"
 ```
 
-### 2. **Simple Report Generator** (Fast & Cheap)
-
-**When:** Quick overview or exploration  
-**Cost:** ~$0.50 per report  
-**Speed:** 30 seconds
-
+### Claude 3.5 Sonnet (Highest Quality)
+- **Cost:** ~$3-5 per report
+- **Speed:** 3-5 minutes
+- **Quality:** Excellent
 ```bash
-python3 create_report.py "rust programming" -o rust.md
+python3 agentic_research.py "your question" --model "anthropic/claude-3.5-sonnet"
 ```
 
-Single-pass generation, good for discovery.
+---
 
-### 3. **Interactive Research Agent** (Exploratory)
-
-**When:** You don't know what you're looking for  
-**Cost:** $0.50-2 per session
+## 🔧 Options
 
 ```bash
-python3 research_agent.py
+python3 agentic_research.py "your question" [options]
+
+Options:
+  -o FILE           Output file (default: print to stdout)
+  --calls N         Max AI calls/budget (default: 20)
+  --model MODEL     OpenRouter model (default: claude-3.5-sonnet)
 ```
 
-Conversational interface for multi-step exploration.
-
-### 4. **Editor Agent** (Legacy - Python-Controlled)
-
-**When:** You want Python to control quality gates  
-**Cost:** $5-10 per report  
-**Speed:** 3-4 minutes
-
+**Examples:**
 ```bash
-export OPEN_ROUTER_KEY="sk-or-v1-..."
-python3 editor_agent.py "analog computers" -o report.md --calls 25
+# Quick research (10 calls, ~1 min)
+python3 agentic_research.py "startup advice" --calls 10
+
+# Standard research (20 calls, ~2 min)
+python3 agentic_research.py "analog computers" -o report.md
+
+# Deep research (30 calls, ~3 min)
+python3 agentic_research.py "rust vs go" --calls 30 --model "anthropic/claude-3.5-sonnet"
 ```
 
-Original system with hard-coded workflow phases. Still works but less flexible than agentic system.
+---
+
+## 📁 What's Inside
+
+```
+agentic-deepresearch-hacker-news/
+├── agentic_research.py    # Main system (375 lines)
+├── tools.py               # Data retrieval (150 lines)
+├── prompts.py             # AI instructions (100 lines)
+├── requirements.txt       # Dependencies
+├── .env                   # Your API key (create this)
+└── downloaded-site/       # 8.8GB HN archive (auto-downloaded)
+```
+
+**Total code:** ~625 lines  
+**Intelligence location:** In the LLM, not the code
 
 ---
 
 ## 🏗️ Architecture
 
-### Agentic Research System (Recommended)
-
-**Design Philosophy:** LLM controls everything, Python is just glue.
-
 ```
-User Question → LLM (decides action) → Python (executes) → 
-LLM (analyzes result) → LLM (decides next action) → ... → 
-LLM (decides DONE) → Final Report
+User Question
+    ↓
+AI decides action (SEARCH/SYNTHESIZE/DONE)
+    ↓
+Python executes (search database, save file)
+    ↓
+AI analyzes results
+    ↓
+AI decides next action
+    ↓
+... recursive refinement ...
+    ↓
+AI decides DONE
+    ↓
+Final Report
 ```
 
-**Components:**
-- `agentic_research.py` - Self-conversation loop (375 lines)
-- `tools.py` - Minimal data retrieval functions (150 lines)
-- `prompts.py` - System prompts with all logic (100 lines)
+**Performance (typical run):**
+- Total time: 46s
+- AI thinking: 45.5s (99%)
+- Database I/O: 0.5s (1%)
+- Python logic: <0.1s (<1%)
 
-**Performance:**
-- Python logic: <2% of total time ✅
-- Search I/O: Variable (depends on data)
-- LLM calls: Majority of time (as it should be)
-
-**Example Run (Gemini Flash, 10 calls):**
-```
-Total time:    46s
-LLM time:      46s (99%)
-Search I/O:    0.5s (1%)
-Python logic:  <0.1s (<1%)
-```
+✅ Python overhead: <2% (as designed)
 
 ---
 
-## 🎯 How Agentic Research Works
-
-### Real Example: "mechanical keyboards"
-
-**Call 1:** LLM decides to search
-```
-THINKING: Start with broad search to understand landscape
-ACTION: SEARCH
-Keywords: [mechanical keyboard, keyboard, custom keyboard]
-→ Found 50 posts
-```
-
-**Call 2:** LLM refines search
-```
-THINKING: Good overview. Now dive into customization aspects
-ACTION: SEARCH
-Keywords: [custom mechanical keyboard, keycaps, switches]
-→ Found 50 posts
-```
-
-**Call 3-4:** LLM continues exploring
-```
-→ More searches for specific topics
-→ 152 posts found total
-```
-
-**Call 5-7:** LLM synthesizes
-```
-ACTION: SYNTHESIZE
-Section: [Motivations and Benefits]
-Content: [Full markdown with quotes]
-```
-
-**Call 8:** LLM searches for challenges
-```
-THINKING: Need to cover downsides too
-ACTION: SEARCH
-Keywords: [mechanical keyboard problems, expensive, noise]
-→ Found 3 posts
-```
-
-**Call 9:** LLM synthesizes challenges section
-
-**Call 10:** LLM decides done
-```
-THINKING: Have comprehensive coverage. Time to finalize.
-ACTION: DONE
-Report: [Full 15KB markdown report with 10+ quotes]
-```
-
-**Result:** 15KB report with proper structure, quotes, and analysis in 46 seconds.
-
----
-
-## 💡 Key Features
-
-### ✅ Truly Agentic
-- LLM decides workflow (not Python)
-- Recursive refinement (LLM controls depth)
-- Self-correcting (adapts to data)
-
-### ✅ Minimal Python Overhead
-- <2% Python logic time
-- Just tool execution
-- Search I/O tracked separately
-
-### ✅ Flexible & Extensible
-- Add new tools easily
-- Modify behavior via prompts (not code)
-- Works with any OpenRouter model
-
-### ✅ No Hallucinations
-- Search validated (1,637 shards work correctly)
-- LLM only uses actual posts
-- Adapts when data sparse
-
----
-
-## 📁 Project Structure
-
-```
-hn-sentinel/
-├── agentic_research.py    # Main agentic system (recommended)
-├── tools.py               # Minimal tool interface
-├── prompts.py             # System prompts with logic
-├── test_search.py         # Foundation validation
-├── create_report.py       # Simple single-pass generator
-├── research_agent.py      # Interactive agent
-├── editor_agent.py        # Legacy Python-controlled system
-├── requirements.txt       # Python dependencies
-├── .env                   # API key (create this)
-├── downloaded-site/       # 8.8GB HN archive (1,637 shards)
-└── examples/              # Example reports
-```
-
----
-
-## 🔧 Installation
-
-```bash
-# Clone or navigate to directory
-cd hn-sentinel
-
-# Install dependencies
-pip3 install -r requirements.txt
-
-# Set API key
-echo "OPENROUTER_API_KEY=sk-or-v1-your-key" > .env
-
-# Test it works
-python3 test_search.py
-```
-
----
-
-## 📖 Usage Examples
-
-### Quick Research (10 calls, ~1 min, ~$0.50)
-```bash
-python3 agentic_research.py "rust programming" --calls 10 --model "google/gemini-2.5-flash"
-```
-
-### Standard Research (20 calls, ~2 min, ~$1-2)
-```bash
-python3 agentic_research.py "startup advice" -o startup.md --calls 20 --model "google/gemini-2.5-flash"
-```
-
-### Deep Research (30 calls, ~3 min, ~$3-5)
-```bash
-python3 agentic_research.py "analog computers" -o analog.md --calls 30 --model "anthropic/claude-3.5-sonnet"
-```
-
-### Test Search Foundation
-```bash
-python3 test_search.py
-```
-
----
-
-## 🎨 Extending the System
+## 🎨 Extending
 
 ### Add New Tools
 
 Edit `tools.py`:
-
 ```python
-def get_user_posts(username: str, limit: int = 20) -> Dict:
-    """Get all posts by a specific user"""
-    db = get_db()
-    # Implementation here
+def get_user_posts(username: str) -> Dict:
+    """Get all posts by a user"""
+    # Your implementation
     return {"posts": [...]}
-
-# Add to TOOLS registry
-TOOLS["get_user_posts"] = {
-    "function": get_user_posts,
-    "description": "Get posts by specific user",
-    "parameters": {"username": "str", "limit": "int"}
-}
 ```
 
-### Modify LLM Behavior
+### Modify AI Behavior
 
 Edit `prompts.py`:
-
 ```python
-AGENTIC_SYSTEM_PROMPT = """
-[Add new instructions here]
-
-NEW ACTION TYPE:
-4. ANALYZE_USER - Analyze a specific user's contributions
-   Format:
-   ACTION: ANALYZE_USER
-   Username: [username]
-   Reasoning: Why analyze this user?
-"""
+def get_system_prompt() -> str:
+    return """
+    You are a researcher...
+    
+    NEW ACTION:
+    4. ANALYZE_USER - Deep dive into a user's contributions
+    """
 ```
 
-No code changes needed - just update the prompt!
+**No code changes needed** - just update the prompt!
+
+---
+
+## 📖 Data
+
+- **Size:** 8.8GB
+- **Items:** ~42 million (stories, comments, polls)
+- **Coverage:** 2006-2025
+- **Format:** 1,637 SQLite shards
+- **Source:** HackerNews BigQuery dataset
+
+The `setup-data.sh` script:
+1. Tries original source first
+2. Falls back to GitHub Releases if needed
+3. Automatically extracts and validates
+
+---
+
+## 🔑 API Key Setup
+
+Get your key from [OpenRouter](https://openrouter.ai/keys):
+
+```bash
+echo "OPENROUTER_API_KEY=sk-or-v1-your-key-here" > .env
+```
+
+Add credits at https://openrouter.ai/credits
 
 ---
 
@@ -336,45 +230,19 @@ No code changes needed - just update the prompt!
 
 ### "OPENROUTER_API_KEY not found"
 ```bash
-echo "OPENROUTER_API_KEY=sk-or-v1-your-key" > .env
+echo "OPENROUTER_API_KEY=sk-or-v1-..." > .env
 ```
 
-### "Payment Required" Error
-Top up your OpenRouter account at https://openrouter.ai/credits
+### "Payment Required"
+Add credits at https://openrouter.ai/credits
 
-### Search Returns 0 Results
-The search works correctly (validated). If 0 results:
-- Topic may not be discussed on HN
-- LLM should automatically try broader terms
-- Try different keywords manually
+### Search returns 0 results
+The AI should automatically try broader terms. If not, try different keywords.
 
-### Slow Performance
-- Gemini Flash: ~1-2s per call (fast)
-- Claude Sonnet: ~8-9s per call (higher quality)
-- Search I/O: 0.05-30s depending on query
-- This is normal and expected
-
----
-
-## 📊 Model Recommendations
-
-### Gemini 2.5 Flash (Recommended for most uses)
-- **Cost:** ~$0.05 per report
-- **Speed:** 1-2s per call
-- **Quality:** Good (7-8/10)
-- **Best for:** Quick research, exploration, iteration
-
-### Claude 3.5 Sonnet (Best quality)
-- **Cost:** ~$3-5 per report
-- **Speed:** 8-9s per call
-- **Quality:** Excellent (8-9/10)
-- **Best for:** Publication-quality reports, complex topics
-
-### GPT-4 Turbo
-- **Cost:** ~$1-2 per report
-- **Speed:** 3-5s per call
-- **Quality:** Very good (8/10)
-- **Best for:** Balanced cost/quality
+### Slow performance
+- Gemini Flash: 1-2s per call (fast)
+- Claude Sonnet: 8-9s per call (high quality)
+- This is normal—most time is AI thinking
 
 ---
 
@@ -382,30 +250,67 @@ The search works correctly (validated). If 0 results:
 
 > **"Intelligence in the model, not in the code."**
 
-We don't build Python to control the LLM.  
-We build the LLM to control itself.  
-Python is just glue.
+Traditional approach:
+```python
+# Python controls everything
+for phase in ["search", "analyze", "synthesize"]:
+    results = llm.call(phase)
+    if quality_check(results):
+        continue
+```
 
-This is agentic AI.
+Agentic approach:
+```python
+# AI controls everything
+while not done:
+    action = llm.decide_next_action()
+    result = execute(action)
+    done = llm.is_satisfied(result)
+```
+
+**Python is just glue.** All intelligence lives in the LLM.
 
 ---
 
-## 📝 License
+## 📝 Additional Tools (Legacy)
 
-MIT License - See repository for details
+### Simple Report Generator
+```bash
+python3 create_report.py "rust programming" -o rust.md
+```
+Single-pass generation. Fast but less thorough.
+
+### Interactive Agent
+```bash
+python3 research_agent.py
+```
+Conversational interface for exploration.
+
+### Editor Agent (Original System)
+```bash
+python3 editor_agent.py "analog computers" -o report.md --calls 25
+```
+Python-controlled workflow. Still works but less flexible.
 
 ---
 
 ## 🙏 Credits
 
-- **HackerNews Archive:** DOSAYGO-STUDIO/HackerBook
+- **HN Archive:** [DOSAYGO-STUDIO/HackerBook](https://github.com/DOSAYGO-STUDIO/HackerBook)
 - **Data Source:** BigQuery HN dataset
-- **Models:** OpenRouter.ai
+- **Models:** [OpenRouter.ai](https://openrouter.ai/)
+
+---
+
+## 📜 License
+
+MIT License
 
 ---
 
 ## 🔗 Links
 
 - **OpenRouter:** https://openrouter.ai/
-- **HackerBook:** https://github.com/DOSAYGO-STUDIO/HackerBook
-- **HN Archive:** https://news.ycombinator.com/
+- **Get API Key:** https://openrouter.ai/keys
+- **HackerBook Project:** https://github.com/DOSAYGO-STUDIO/HackerBook
+- **HackerNews:** https://news.ycombinator.com/
