@@ -46,9 +46,9 @@ else
     cd .tmp-download
     
     # Download all 10 split parts
-    for part in aa ab ac ad ae af ag ah ai aj; do
-        filename="data-archive.tar.gz.part${part}"
-        echo "Downloading part ${part} (10 parts total)..."
+    for i in $(seq -w 1 10); do
+        filename="data-archive-part-${i}.tar.gz"
+        echo "Downloading part ${i} (10 parts total)..."
         curl -L -o "$filename" \
             "https://github.com/${REPO}/releases/latest/download/${filename}"
     done
@@ -56,7 +56,7 @@ else
     echo ""
     echo "🔧 Merging split parts and extracting..."
     # Concatenate all parts back into single archive and extract
-    cat data-archive.tar.gz.part* | tar -xzf -
+    cat data-archive-part-*.tar.gz | tar -xzf -
     
     # Move extracted data to parent directory (the repo root)
     mv downloaded-site ../
