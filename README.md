@@ -26,20 +26,17 @@ open report.md
 
 ### Data Setup
 
-The system requires the HackerNews archive (8.8GB, 42M items, 2006-2025). 
+The system requires the HackerNews archive (8.8GB, 42M items, 2006-2025).
 
-**Option 1: Automatic (Recommended)**
 ```bash
-./setup-data.sh  # Downloads from GitHub Releases
+./setup-data.sh
 ```
 
-**Option 2: Manual (If releases unavailable)**
-```bash
-wget https://github.com/DOSAYGO-STUDIO/HackerBook/releases/download/v1.0/downloaded-site.tar.gz
-tar -xzf downloaded-site.tar.gz && rm downloaded-site.tar.gz
-```
+The script automatically:
+1. Tries to download from the original source first
+2. Falls back to GitHub Releases backup (archived Dec 31, 2025) if original is unavailable
 
-The data is archived as of December 31, 2025, and split into 5 parts (~2GB each) in GitHub Releases for easier downloading.
+Either way, you get the same `downloaded-site/` directory and the code works seamlessly.
 
 ---
 

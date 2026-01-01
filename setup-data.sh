@@ -1,14 +1,13 @@
 #!/bin/bash
 # Setup script to download and extract HackerNews archive data
-# This downloads 8.8GB of data split into 5 parts from GitHub Releases
+# Tries original source first, falls back to GitHub Releases backup
 
-set -e  # Exit on error
+set -e
 
 echo "🔬 Agentic Deep Research on Hacker News - Data Setup"
 echo "======================================================"
 echo ""
 echo "This will download 8.8GB of HackerNews archive data (2006-2025)"
-echo "Data is split into 5 parts (~2GB each)"
 echo ""
 
 # Check if data already exists
@@ -23,39 +22,61 @@ if [ -d "downloaded-site" ]; then
     rm -rf downloaded-site
 fi
 
-# Get the latest release tag
-REPO="artvandelay/agentic-deepresearch-hacker-news"
-echo "📥 Downloading data from GitHub Releases..."
+# Try original source first
+echo "📥 Attempting download from original source..."
+ORIGINAL_URL="https://github.com/DOSAYGO-STUDIO/HackerBook/releases/download/v1.0/downloaded-site.tar.gz"
+
+if curl -L --fail --silent --head "$ORIGINAL_URL" > /dev/null 2>&1; then
+    echo "✅ Original source available, downloading (this may take a while)..."
+    curl -L -o downloaded-site.tar.gz "$ORIGINAL_URL"
+    echo ""
+    echo "🔧 Extracting archive..."
+    tar -xzf downloaded-site.tar.gz
+    rm downloaded-site.tar.gz
+    echo "✅ Downloaded from original source"
+else
+    echo "⚠️  Original source unavailable!"
+    echo "📥 Downloading from GitHub Releases backup (archived Dec 31, 2025)..."
+    echo ""
+    
+    REPO="artvandelay/agentic-deepresearch-hacker-news"
+    
+    # Create temp directory for split parts
+    mkdir -p .tmp-download
+    cd .tmp-download
+    
+    # Download all 5 split parts
+    for part in aa ab ac ad ae; do
+        filename="data-archive.tar.gz.part${part}"
+        echo "Downloading part ${part} (5 parts total)..."
+        curl -L -o "$filename" \
+            "https://github.com/${REPO}/releases/latest/download/${filename}"
+    done
+    
+    echo ""
+    echo "🔧 Merging split parts and extracting..."
+    # Concatenate all parts back into single archive and extract
+    cat data-archive.tar.gz.part* | tar -xzf -
+    
+    # Move extracted data to parent directory (the repo root)
+    mv downloaded-site ../
+    
+    # Cleanup temp directory
+    cd ..
+    rm -rf .tmp-download
+    
+    echo "✅ Downloaded from GitHub Releases backup"
+fi
+
 echo ""
-
-# Create temp directory
-mkdir -p .tmp-download
-cd .tmp-download
-
-# Download all parts
-for part in aa ab ac ad ae; do
-    filename="data-archive.tar.gz.part${part}"
-    echo "Downloading part ${part}..."
-    curl -L -o "$filename" \
-        "https://github.com/${REPO}/releases/latest/download/${filename}"
-done
-
-echo ""
-echo "🔧 Reconstructing and extracting archive..."
-cat data-archive.tar.gz.part* | tar -xzf -
-
-# Move extracted data to parent directory
-mv downloaded-site ../
-
-# Go back and cleanup
-cd ..
-rm -rf .tmp-download
-
-echo ""
+echo "======================================================"
 echo "✅ Setup complete!"
+echo "======================================================"
 echo ""
 echo "Data location: $(pwd)/downloaded-site/"
 echo "Data size: $(du -sh downloaded-site/ | cut -f1)"
+echo "Shards: $(ls downloaded-site/static-shards/*.sqlite.gz 2>/dev/null | wc -l | tr -d ' ') SQLite files"
 echo ""
-echo "You can now run: python3 agentic_research.py \"your query\" -o report.md"
-
+echo "You can now run:"
+echo "  python3 agentic_research.py \"your query\" -o report.md"
+echo ""
