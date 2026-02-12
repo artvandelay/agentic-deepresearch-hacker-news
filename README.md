@@ -1,5 +1,7 @@
 # 🔬 Agentic Deep Research on Hacker News
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/artvandelay/agentic-deepresearch-hacker-news)
+
 **AI-powered research on 19 years of HackerNews discussions (2006-2025)**
 
 Ask a question. Get a comprehensive research report. The AI decides everything—what to search, what to analyze, when it's done.
